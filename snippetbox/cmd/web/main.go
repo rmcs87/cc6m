@@ -24,15 +24,13 @@ func main() {
     infoLog: infoLogger,
   }
   
-	mux := http.NewServeMux()
-  mux.HandleFunc("/",app.home)
-  mux.HandleFunc("/snippet",app.showSnippet)
-  mux.HandleFunc("/snippet/create",app.createSnippet)
-
-  fileServer := http.FileServer(http.Dir("./ui/static/"))
-  mux.Handle("/static/",http.StripPrefix("/static",fileServer))
+  srv := &http.Server{
+    Addr:     *addr,
+		ErrorLog: errorLogger,
+		Handler:  app.routes(),
+  }
   
   infoLogger.Printf("Iniciando o Servidor na Porta %s\n", *addr)
-  err := http.ListenAndServe(*addr, mux)
+  err := srv.ListenAndServe()
   errorLogger.Fatal(err)
 }
