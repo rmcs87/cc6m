@@ -14,6 +14,12 @@ func (app *application) home(rw http.ResponseWriter, r *http.Request) {
 		app.notFound(rw)
 		return
 	}
+
+  snippets, err := app.snippets.Latest()
+  if err != nil{
+    app.serverError(rw, err)
+  }
+  
 	files := []string{
 		"./ui/html/home.page.tmpl.html",
 		"./ui/html/base.layout.tmpl.html",
@@ -26,7 +32,7 @@ func (app *application) home(rw http.ResponseWriter, r *http.Request) {
 		app.serverError(rw, err)
 		return
 	}
-	err = ts.Execute(rw, nil)
+	err = ts.Execute(rw, snippets)
 	if err != nil {
 		app.serverError(rw, err)
 		return
@@ -48,7 +54,26 @@ func (app *application) showSnippet(rw http.ResponseWriter, r *http.Request) {
     app.serverError(rw, err)
     return
   }
-  fmt.Fprintf(rw, "%v", s)
+
+  files := []string{
+		"./ui/html/show.page.tmpl.html",
+		"./ui/html/base.layout.tmpl.html",
+		"./ui/html/footer.partial.tmpl.html",
+	}
+
+	ts, err := template.ParseFiles(files...)
+
+	if err != nil {
+		app.serverError(rw, err)
+		return
+	}
+  app.infoLog.Println(s)
+	err = ts.Execute(rw, s)
+	if err != nil {
+		app.serverError(rw, err)
+		return
+	}
+  
 }
 
 //curl -i -X POST http://localhost:4000/snippet/create
